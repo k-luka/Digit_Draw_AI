@@ -1,32 +1,42 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # Import CORS
 import numpy as np
 from PIL import Image
 import io
-# Note: I converted the image to 28x28 greyscale here for consistency and safety.
-# Need to remove the covertion in the front end.
+import pickle
+from network import Network  # Import your Network class
 
-# TODO: import my model here!!!
-
+# Initialize Flask app
 app = Flask(__name__)
+CORS(app)  # Enable CORS for the entire app
 
-# TODO: Initialize model here!!!
+# Load the saved model weights and biases
+with open('model_weights.pkl', 'rb') as f:
+    model_data = pickle.load(f)
 
-# Define route to handle prediction requests
+# Initialize the network and load weights
+net = Network([784, 30, 10])  # Make sure the architecture matches the saved model
+net.weights = model_data['weights']  # Load the saved weights
+net.biases = model_data['biases']  # Load the saved biases
+
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Get image file from request
+    # Get the image file from the request
     image_file = request.files['image'].read()
-
-    # Convert image to 28x28 greyscale
-    image = Image.open(io.BytesIO(image_file)).convert('L') # 'L' is greyscale
+    
+    # Convert the image to a 28x28 grayscale image
+    image = Image.open(io.BytesIO(image_file)).convert('L')
     image = image.resize((28, 28))
+    
+    # Convert the image to a numpy array and normalize it
+    image_np = np.array(image).astype('float32') / 255.0  # Normalize to 0-1 range
+    image_np = image_np.flatten().reshape(784, 1)  # Flatten and reshape for the network input (784x1)
 
-    # normalize
-    image_np = np.array(image).astype('flaot32') / 255.0
-    image_np = image_np.reshape(1, 28, 28) 
-
-    # predicted_digit = model.predict(image_np)
-
+    # Use the network to make a prediction
+    output = net.feedforward(image_np)
+    predicted_digit = np.argmax(output)  # Get the index of the highest output value
+    
+    # Return the predicted digit as a JSON response
     return jsonify({'digit': int(predicted_digit)})
 
 if __name__ == '__main__':

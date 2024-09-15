@@ -65,40 +65,31 @@ submitButton.addEventListener('click', () => {
   
   // Downscale the original canvas into a 28x28 pixel canvas
   downscaleCtx.drawImage(canvas, 0, 0, 28, 28);
-  
-  // Get the image data (to use for model input)
-  const imageData = downscaleCtx.getImageData(0, 0, 28, 28).data;
-  
-  // Log the preprocessed data (grayscale, normalized)
-  console.log(imageData);
 
-  // Display the image preview (optional)
-  if (img) {
-    img.src = downscaleCanvas.toDataURL(); // Update existing image
-  } else {
-    img = document.createElement('img');
-    img.src = downscaleCanvas.toDataURL(); // Convert the canvas to a Data URL
-    img.width = 200;
-    img.height = 200;
-    img.style = "margin-top: 20px;";
-    document.body.appendChild(img); // Append the image to the body
-  }
-
-  // Send the image to the Flask backend for prediction
+  // Convert the canvas to an image (blob)
   downscaleCanvas.toBlob((blob) => {
     const formData = new FormData();
     formData.append('image', blob, 'digit.png');
 
-    // Make a POST request to the backend
+    // Log before sending the request
+    console.log('Sending image to backend...');
+
+    // Send the image to the Flask backend for prediction
     fetch('http://localhost:5000/predict', {
       method: 'POST',
       body: formData,
     })
     .then(response => response.json())
     .then(data => {
-      console.log('Predicted digit:', data.digit);
-      // Display the predicted digit (can be shown on the page or as an alert)
-      alert(`Predicted Digit: ${data.digit}`);
+      console.log('Response from backend:', data);  // Log the response
+
+      // Display the predicted digit
+      const resultElement = document.getElementById('predictionResult');
+      if (resultElement) {
+        resultElement.innerText = `Predicted Digit: ${data.digit}`;
+      } else {
+        alert(`Predicted Digit: ${data.digit}`);
+      }
     })
     .catch(error => {
       console.error('Error:', error);

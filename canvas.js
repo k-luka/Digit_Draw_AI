@@ -18,7 +18,7 @@ canvas.addEventListener('mousemove', draw);
 function draw(event) {
   if (!drawing) return;
   
-  ctx.lineWidth = 28;
+  ctx.lineWidth = 40;
   ctx.lineCap = 'round';
   
   ctx.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
@@ -71,12 +71,11 @@ submitButton.addEventListener('click', () => {
   
   // Log the preprocessed data (grayscale, normalized)
   console.log(imageData);
-  
-  // If the image element already exists, update it
+
+  // Display the image preview (optional)
   if (img) {
     img.src = downscaleCanvas.toDataURL(); // Update existing image
   } else {
-    // Create a new image element if it doesn't exist
     img = document.createElement('img');
     img.src = downscaleCanvas.toDataURL(); // Convert the canvas to a Data URL
     img.width = 200;
@@ -84,7 +83,25 @@ submitButton.addEventListener('click', () => {
     img.style = "margin-top: 20px;";
     document.body.appendChild(img); // Append the image to the body
   }
+
+  // Send the image to the Flask backend for prediction
+  downscaleCanvas.toBlob((blob) => {
+    const formData = new FormData();
+    formData.append('image', blob, 'digit.png');
+
+    // Make a POST request to the backend
+    fetch('http://localhost:5000/predict', {
+      method: 'POST',
+      body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Predicted digit:', data.digit);
+      // Display the predicted digit (can be shown on the page or as an alert)
+      alert(`Predicted Digit: ${data.digit}`);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  }, 'image/png');
 });
-
-
-

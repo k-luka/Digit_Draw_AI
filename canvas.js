@@ -18,7 +18,7 @@ canvas.addEventListener('mousemove', draw);
 function draw(event) {
   if (!drawing) return;
   
-  ctx.lineWidth = 40;
+  ctx.lineWidth = 50;
   ctx.lineCap = 'round';
   
   ctx.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);

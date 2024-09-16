@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS  # Import CORS
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 import io
 import pickle
 from network import Network  # Import your Network class
@@ -27,9 +27,12 @@ def predict():
     # Convert the image to a 28x28 grayscale image
     image = Image.open(io.BytesIO(image_file)).convert('L')
     image = image.resize((28, 28))
+
+    # Invert the image (model was trained with black background)
+    inverted_image = ImageOps.invert(image)
     
     # Convert the image to a numpy array and normalize it
-    image_np = np.array(image).astype('float32') / 255.0  # Normalize to 0-1 range
+    image_np = np.array(inverted_image).astype('float32') / 255.0  # Normalize to 0-1 range
     image_np = image_np.flatten().reshape(784, 1)  # Flatten and reshape for the network input (784x1)
 
     # Use the network to make a prediction

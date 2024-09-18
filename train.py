@@ -1,5 +1,5 @@
 import mnist_loader
-import test_file
+import network
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
@@ -8,7 +8,7 @@ import pickle
 training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
 
 # Initialize the network
-net = test_file.Network([784, 64, 32, 10])
+net = network.Network([784, 64, 32, 10])
 
 # Train the network
 net.SGD(training_data, 30, 10, 3.0, test_data=test_data)

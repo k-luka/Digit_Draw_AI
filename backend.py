@@ -3,6 +3,7 @@ from flask_cors import CORS  # Import CORS
 import numpy as np
 from PIL import Image, ImageOps
 import io
+import base64  # Import for encoding the image to base64
 import pickle
 from network import Network  # Import your Network class
 
@@ -39,8 +40,13 @@ def predict():
     output = net.feedforward(image_np)
     predicted_digit = np.argmax(output)  # Get the index of the highest output value
     
-    # Return the predicted digit as a JSON response
-    return jsonify({'digit': int(predicted_digit)})
+    # Convert the processed image (inverted_image) to base64 for display
+    buffered = io.BytesIO()
+    inverted_image.save(buffered, format="PNG")
+    img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+    # Return the predicted digit and the processed image (as base64)
+    return jsonify({'digit': int(predicted_digit), 'processed_image': img_base64})
 
 if __name__ == '__main__':
     app.run(debug=True)

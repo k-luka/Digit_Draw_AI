@@ -8,10 +8,10 @@ import pickle
 training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
 
 # Initialize the network
-net = network.Network([784, 64, 32, 10])
+net = network.Network([784, 128, 64, 32, 10])
 
 # Train the network
-net.SGD(training_data, 30, 10, 3.0, test_data=test_data)
+net.SGD(training_data, epochs=40, mini_batch_size=10, eta=0.01, lmbda=5.0, test_data=test_data)
 
 # Save the trained model's weights and biases
 model_data = {

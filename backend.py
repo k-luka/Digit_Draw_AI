@@ -15,7 +15,7 @@ with open('model_weights.pkl', 'rb') as f:
     model_data = pickle.load(f)
 
 # Initialize the network and load weights
-net = Network([784, 30, 10])  # Make sure the architecture matches the saved model
+net = Network([784, 128, 64, 32, 10])  # Make sure the architecture matches the saved model
 net.weights = model_data['weights']  # Load the saved weights
 net.biases = model_data['biases']  # Load the saved biases
 

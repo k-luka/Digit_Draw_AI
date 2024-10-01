@@ -22,7 +22,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px 10px; /* Reduced top padding and added side padding */
+      padding: 20px 10px; /* Reduced top and side padding */
       min-height: 100vh;
       background-color: #2c2c2c;
       font-family: 'Poppins', sans-serif;
@@ -189,7 +189,8 @@
       canvas {
         width: 100%;
         height: auto;
-        max-width: 100%; /* Ensure canvas doesn't exceed screen width */
+        max-width: 300px; /* Set maximum width to 300px */
+        max-height: 300px; /* Set maximum height to 300px */
       }
 
       #processedImage {
@@ -273,8 +274,14 @@
   </div>
   
   <!-- Prediction Result -->
-  <div id="predictionResult" style="margin-top: 18px; font-size: 24px; margin-bottom: 10px;"></div>
+  <div id="predictionResult" style="margin-top: 20px; font-size: 24px;"></div>
 
+  <!-- Processed Image Display -->
+  <div>
+    <h3>Processed Image:</h3>
+    <img id="processedImage" width="280" height="280" />
+  </div>
+  
   <!-- Training Mode Toggle -->
   <div class="training-mode-container">
     <label for="trainingMode">Training Mode:</label>
@@ -282,12 +289,6 @@
       <input type="checkbox" id="trainingMode">
       <span class="slider"></span>
     </label>
-  </div>
-
-  <!-- Processed Image Display -->
-  <div>
-    <h3>Processed Image:</h3>
-    <img id="processedImage" width="280" height="280" />
   </div>
   
   <!-- Label Input (Hidden by Default) -->

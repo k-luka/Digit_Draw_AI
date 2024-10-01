@@ -3,20 +3,53 @@ document.addEventListener('DOMContentLoaded', () => {
   const ctx = canvas.getContext('2d');
   let drawing = false;
 
+  // Function to resize the canvas based on its displayed size
+  function resizeCanvas() {
+    // Get the computed style of the canvas
+    const computedStyle = window.getComputedStyle(canvas);
+    const width = parseInt(computedStyle.getPropertyValue('width'));
+    const height = parseInt(computedStyle.getPropertyValue('height'));
+
+    // Only resize if the size has changed
+    if (canvas.width !== width || canvas.height !== height) {
+      // Create a temporary canvas to preserve the current drawing
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(canvas, 0, 0);
+
+      // Resize the canvas
+      canvas.width = width;
+      canvas.height = height;
+
+      // Restore the drawing
+      ctx.drawImage(tempCanvas, 0, 0, width, height);
+    }
+  }
+
+  // Initial resize
+  resizeCanvas();
+
+  // Resize the canvas when the window is resized
+  window.addEventListener('resize', resizeCanvas);
+
   // Set up event listeners for mouse events
   canvas.addEventListener('mousedown', startDrawing);
   canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseout', stopDrawing); // Stop drawing when mouse leaves the canvas
   canvas.addEventListener('mousemove', draw);
 
   // Set up event listeners for touch events
   canvas.addEventListener('touchstart', startDrawing);
   canvas.addEventListener('touchend', stopDrawing);
+  canvas.addEventListener('touchcancel', stopDrawing); // Handle touch cancel
   canvas.addEventListener('touchmove', draw);
 
   // Prevent scrolling when touching the canvas
-  canvas.addEventListener('touchstart', (event) => event.preventDefault());
-  canvas.addEventListener('touchend', (event) => event.preventDefault());
-  canvas.addEventListener('touchmove', (event) => event.preventDefault());
+  ['touchstart', 'touchend', 'touchmove'].forEach(eventType => {
+    canvas.addEventListener(eventType, (event) => event.preventDefault(), { passive: false });
+  });
 
   function startDrawing(event) {
     drawing = true;
@@ -34,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const { x, y } = getCoords(event);
 
-    ctx.lineWidth = 30;
+    // Adjust line width based on screen size
+    ctx.lineWidth = window.innerWidth <= 700 ? 20 : 30;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
@@ -64,6 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetButton = document.getElementById('resetBtn');
   resetButton.addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff"; // Reset background to white
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   });
 
   // Function to downscale the image
@@ -162,6 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('Your data has been submitted. Thank you!');
           // Clear the canvas and label input
           ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#ffffff"; // Reset background to white
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
           labelInput.value = '';
         })
         .catch(error => {

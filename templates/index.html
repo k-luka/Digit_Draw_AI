@@ -22,7 +22,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px 10px; /* Reduced top and side padding */
+      padding: 20px 10px;
       min-height: 100vh;
       background-color: #2c2c2c;
       font-family: 'Poppins', sans-serif;
@@ -38,11 +38,11 @@
 
     canvas {
       border: 2px solid #444;
-      margin-bottom: 20px; /* Reduced bottom margin */
+      margin-bottom: 20px;
       width: 600px;
       height: 600px;
       background-color: #ffffff;
-      touch-action: none; /* Prevent touch gestures from interfering with drawing */
+      touch-action: none;
     }
 
     .button-container {
@@ -54,15 +54,15 @@
     }
 
     button {
-      padding: 14px 28px; /* Slightly reduced padding */
-      font-size: 16px; /* Slightly reduced font size */
+      padding: 14px 28px;
+      font-size: 16px;
       color: #fff;
       background-color: #3b3b3b;
       border: 3px solid transparent;
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.3s ease, border 0.3s ease, transform 0.2s ease;
-      min-width: 140px; /* Slightly reduced width */
+      min-width: 140px;
     }
 
     button:hover {
@@ -94,7 +94,7 @@
     .label-container {
       margin: 20px;
       font-size: 18px;
-      display: none; /* Hidden by default */
+      display: none;
       text-align: center;
     }
 
@@ -179,7 +179,7 @@
     /* Responsive Design Enhancements */
     @media (max-width: 700px) {
       body {
-        padding: 10px 5px; /* Further reduce padding on very small screens */
+        padding: 10px 5px;
       }
 
       h1 {
@@ -189,8 +189,8 @@
       canvas {
         width: 100%;
         height: auto;
-        max-width: 300px; /* Set maximum width to 300px */
-        max-height: 300px; /* Set maximum height to 300px */
+        max-width: 300px;
+        max-height: 300px;
       }
 
       #processedImage {
@@ -213,7 +213,7 @@
       button {
         width: 80%;
         font-size: 20px;
-        padding: 14px 0; /* Adjusted padding */
+        padding: 14px 0;
       }
 
       .training-mode-container {
@@ -240,9 +240,9 @@
 
       /* Highlight Predicted Digit */
       #predictionResult {
-        font-size: 28px; /* Increased font size */
-        font-weight: bold; /* Make it bold */
-        text-decoration: underline; /* Underline the text */
+        font-size: 28px; 
+        font-weight: bold; 
+        text-decoration: underline;
         text-align: center;
         margin-top: 20px;
       }
@@ -250,7 +250,6 @@
 
     /* Additional Styles for Desktop */
     @media (min-width: 701px) {
-      /* Highlight Predicted Digit on larger screens as well */
       #predictionResult {
         font-size: 24px;
         font-weight: bold;
@@ -268,9 +267,9 @@
   
   <!-- Buttons Container -->
   <div class="button-container">
-    <button id="submitBtn">Predict</button>
-    <button id="resetBtn">Reset</button>
-    <button id="submitDataBtn" style="display: none;">Submit Data</button>
+    <button id="submitBtn" aria-label="Predict Digit">Predict</button>
+    <button id="resetBtn" aria-label="Reset Canvas">Reset</button>
+    <button id="submitDataBtn" style="display: none;" aria-label="Submit Data">Submit Data</button>
   </div>
   
   <!-- Prediction Result -->
@@ -279,14 +278,14 @@
   <!-- Processed Image Display -->
   <div>
     <h3>Processed Image:</h3>
-    <img id="processedImage" width="280" height="280" />
+    <img id="processedImage" width="280" height="280" alt="Processed Digit Image"/>
   </div>
   
   <!-- Training Mode Toggle -->
   <div class="training-mode-container">
     <label for="trainingMode">Training Mode:</label>
     <label class="switch">
-      <input type="checkbox" id="trainingMode">
+      <input type="checkbox" id="trainingMode" aria-label="Toggle Training Mode">
       <span class="slider"></span>
     </label>
   </div>
@@ -294,7 +293,7 @@
   <!-- Label Input (Hidden by Default) -->
   <div class="label-container" id="labelContainer">
     <label for="digitLabel">Label:</label>
-    <input type="text" id="digitLabel" maxlength="1" placeholder="Enter the digit you drew (0-9)">
+    <input type="text" id="digitLabel" maxlength="1" placeholder="Enter the digit you drew (0-9)" aria-label="Digit Label Input">
   </div>
   
   <!-- Reference to the static JavaScript file -->

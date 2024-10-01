@@ -1,52 +1,106 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import numpy as np
 from PIL import Image, ImageOps
 import io
 import base64  # Import for encoding the image to base64
+import base64
 import pickle
-from network import Network  # Import your Network class
+import os
+from datetime import datetime
+from network import Network
 
-# Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for the entire app
+CORS(app)
 
 # Load the saved model weights and biases
-with open('model_weights.pkl', 'rb') as f:
+with open('fine_tuned_model_weights.pkl', 'rb') as f:
     model_data = pickle.load(f)
 
 # Initialize the network and load weights
-net = Network([784, 128, 64, 32, 10])  # Make sure the architecture matches the saved model
-net.weights = model_data['weights']  # Load the saved weights
-net.biases = model_data['biases']  # Load the saved biases
+net = Network([784, 128, 64, 32, 10])
+net.weights = model_data['weights']
+net.biases = model_data['biases']
+
+def center_image(image):
+    np_image = np.array(image)
+    np_image = (np_image > 0).astype(np.uint8)
+    coords = np.argwhere(np_image)
+    if coords.size == 0:
+        return image
+    y0, x0 = coords.min(axis=0)
+    y1, x1 = coords.max(axis=0) + 1
+    cropped = np_image[y0:y1, x0:x1]
+
+    new_image = Image.new('L', (28, 28))
+    paste_x = (28 - cropped.shape[1]) // 2
+    paste_y = (28 - cropped.shape[0]) // 2
+    new_image.paste(Image.fromarray(cropped * 255), (paste_x, paste_y))
+
+    return new_image
+
+def binarize_image(image):
+    threshold = 128
+    return image.point(lambda p: 255 if p > threshold else 0, 'L')
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Get the image file from the request
-    image_file = request.files['image'].read()
-    
-    # Convert the image to a 28x28 grayscale image
-    image = Image.open(io.BytesIO(image_file)).convert('L')
-    image = image.resize((28, 28))
+    try:
+        image_file = request.files['image'].read()
+        image = Image.open(io.BytesIO(image_file)).convert('L')
+        inverted_image = ImageOps.invert(image)
+        centered_image = center_image(inverted_image)
+        binarized_image = binarize_image(centered_image)
 
-    # Invert the image (model was trained with black background)
-    inverted_image = ImageOps.invert(image)
-    
-    # Convert the image to a numpy array and normalize it
-    image_np = np.array(inverted_image).astype('float32') / 255.0  # Normalize to 0-1 range
-    image_np = image_np.flatten().reshape(784, 1)  # Flatten and reshape for the network input (784x1)
+        image_np = np.array(binarized_image).astype('float32') / 255.0
+        image_np = image_np.flatten().reshape(784, 1)
 
-    # Use the network to make a prediction
-    output = net.feedforward(image_np)
-    predicted_digit = np.argmax(output)  # Get the index of the highest output value
-    
-    # Convert the processed image (inverted_image) to base64 for display
-    buffered = io.BytesIO()
-    inverted_image.save(buffered, format="PNG")
-    img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        output = net.feedforward(image_np)
+        predicted_digit = np.argmax(output)
 
-    # Return the predicted digit and the processed image (as base64)
-    return jsonify({'digit': int(predicted_digit), 'processed_image': img_base64})
+        buffered = io.BytesIO()
+        binarized_image.save(buffered, format="PNG")
+        img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+        return jsonify({'digit': int(predicted_digit), 'processed_image': img_base64})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/submit_data', methods=['POST'])
+def submit_data():
+    try:
+        image_file = request.files['image'].read()
+        label = request.form.get('label')
+
+        if label is None or not label.isdigit() or not (0 <= int(label) <= 9):
+            return jsonify({'status': 'error', 'message': 'Invalid label provided.'}), 400
+
+        image = Image.open(io.BytesIO(image_file)).convert('L')
+        inverted_image = ImageOps.invert(image)
+        centered_image = center_image(inverted_image)
+        binarized_image = binarize_image(centered_image)
+
+        save_directory = 'data/newData'
+        os.makedirs(save_directory, exist_ok=True)
+
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S%f')
+        filename = f'user_{timestamp}.png'
+        filepath = os.path.join(save_directory, filename)
+
+        binarized_image.save(filepath)
+
+        label_file = os.path.join(save_directory, 'labels.csv')
+        with open(label_file, 'a') as f:
+            f.write(f'{filename},{label}\n')
+
+        return jsonify({'status': 'success', 'message': 'Data saved successfully.'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)

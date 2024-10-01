@@ -17,14 +17,22 @@ canvas.addEventListener('mousemove', draw);
 
 function draw(event) {
   if (!drawing) return;
+
+  // Get the position of the canvas relative to the viewport
+  const rect = canvas.getBoundingClientRect();
+  
+  // Adjust the mouse position to account for the canvas's position
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
   
   ctx.lineWidth = 30;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   
-  ctx.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+  ctx.lineTo(x, y);
   ctx.stroke();
 }
+
 
 // Reset the canvas
 const resetButton = document.getElementById('resetBtn');

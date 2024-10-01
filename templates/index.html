@@ -44,15 +44,15 @@
     }
 
     button {
-      padding: 16px 32px;
-      font-size: 18px;
+      padding: 14px 28px; /* Slightly reduced padding */
+      font-size: 16px; /* Slightly reduced font size */
       color: #fff;
       background-color: #3b3b3b;
       border: 3px solid transparent;
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.3s ease, border 0.3s ease, transform 0.2s ease;
-      min-width: 150px;
+      min-width: 140px; /* Slightly reduced width */
     }
 
     button:hover {
@@ -202,7 +202,7 @@
       button {
         width: 80%;
         font-size: 20px;
-        padding: 16px 0;
+        padding: 14px 0; /* Adjusted padding */
       }
 
       .training-mode-container {
@@ -229,10 +229,11 @@
 
       /* Highlight Predicted Digit */
       #predictionResult {
-        font-size: 32px; /* Increase font size */
+        font-size: 28px; /* Increased font size */
         font-weight: bold; /* Make it bold */
         text-decoration: underline; /* Underline the text */
         text-align: center;
+        margin-top: 20px;
       }
     }
 
@@ -254,26 +255,11 @@
   <!-- Canvas for Drawing -->
   <canvas id="drawCanvas" width="600" height="600"></canvas>
   
-  <!-- Training Mode Toggle -->
-  <div class="training-mode-container">
-    <label for="trainingMode">Training Mode:</label>
-    <label class="switch">
-      <input type="checkbox" id="trainingMode">
-      <span class="slider"></span>
-    </label>
-  </div>
-  
   <!-- Buttons Container -->
   <div class="button-container">
     <button id="submitBtn">Predict</button>
     <button id="resetBtn">Reset</button>
     <button id="submitDataBtn" style="display: none;">Submit Data</button>
-  </div>
-  
-  <!-- Label Input (Hidden by Default) -->
-  <div class="label-container" id="labelContainer">
-    <label for="digitLabel">Label:</label>
-    <input type="text" id="digitLabel" maxlength="1" placeholder="Enter the digit you drew (0-9)">
   </div>
   
   <!-- Prediction Result -->
@@ -283,6 +269,21 @@
   <div>
     <h3>Processed Image:</h3>
     <img id="processedImage" width="280" height="280" />
+  </div>
+  
+  <!-- Training Mode Toggle -->
+  <div class="training-mode-container">
+    <label for="trainingMode">Training Mode:</label>
+    <label class="switch">
+      <input type="checkbox" id="trainingMode">
+      <span class="slider"></span>
+    </label>
+  </div>
+  
+  <!-- Label Input (Hidden by Default) -->
+  <div class="label-container" id="labelContainer">
+    <label for="digitLabel">Label:</label>
+    <input type="text" id="digitLabel" maxlength="1" placeholder="Enter the digit you drew (0-9)">
   </div>
   
   <!-- Reference to the static JavaScript file -->

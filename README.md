@@ -12,7 +12,7 @@
 
 ## Live Demo
 
-Check out the live version of the project at: [digitdraw.org](https://digitdraw.org)
+Check out the live version of the project at: [digitdraw.org](https://www.digitdraw.org)
 
 ## Installation
 

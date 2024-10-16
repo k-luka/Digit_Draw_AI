@@ -25,7 +25,7 @@ net.biases = model_data['biases']
 from PIL import Image
 
 def center_image(image):
-    # Convert to binary for locating the digit area
+    # Convert to binary to find the bounding box
     np_image = np.array(image)
     np_image = (np_image > 0).astype(np.uint8)
     coords = np.argwhere(np_image)
@@ -36,15 +36,20 @@ def center_image(image):
     y0, x0 = coords.min(axis=0)
     y1, x1 = coords.max(axis=0) + 1
     cropped = image.crop((x0, y0, x1, y1))
-    
-    # Resize without smoothing for clarity
-    cropped = cropped.resize((20, 20))
-    
-    # Center within 28x28 canvas
+
+    # Calculate the scaling factor to fit into a 20x20 box, keeping aspect ratio
+    scale_factor = min(20 / cropped.width, 20 / cropped.height)
+    new_width = int(cropped.width * scale_factor)
+    new_height = int(cropped.height * scale_factor)
+
+    # Resize the digit without smoothing
+    resized_digit = cropped.resize((new_width, new_height))
+
+    # Center the resized digit on a 28x28 canvas
     new_image = Image.new('L', (28, 28))
-    paste_x = (28 - 20) // 2
-    paste_y = (28 - 20) // 2
-    new_image.paste(cropped, (paste_x, paste_y))
+    paste_x = (28 - new_width) // 2
+    paste_y = (28 - new_height) // 2
+    new_image.paste(resized_digit, (paste_x, paste_y))
     
     return new_image
 

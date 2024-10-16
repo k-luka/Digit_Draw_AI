@@ -14,16 +14,13 @@ from backend import center_image
 def preprocess_image(image_path):
     image = Image.open(image_path).convert('L')
     
-    # Do not invert the image again
-    # image = ImageOps.invert(image)
+    # Invert the image to match the inversion done during prediction
+    image = ImageOps.invert(image)
     
-    # Center the image (optional if already centered)
-    # image = center_image(image)  # You can comment this out if images are already centered
+    # Apply centering and scaling if not already applied
+    image = center_image(image)
     
-    # Apply binarization if needed
-    # image = binarize_image(image)  # Only if necessary
-    
-    # Normalize pixel values
+    # Do not binarize the image
     image_np = np.array(image).astype('float32') / 255.0
     image_np = image_np.flatten().reshape(784, 1)
     return image_np
@@ -51,7 +48,7 @@ net.weights = model_data['weights']
 net.biases = model_data['biases']
 
 # Load your user data
-user_data = load_user_data('data/newData')
+user_data = load_user_data('data/processedData')
 
 # Split user data into training and validation sets
 user_train_data, user_val_data = train_test_split(user_data, test_size=0.1, random_state=42)

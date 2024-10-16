@@ -62,6 +62,7 @@ submitButton.addEventListener('click', () => {
 
   downscaleCtx.fillStyle = "#ffffff"; // Set fill color to white
   downscaleCtx.fillRect(0, 0, downscaleCanvas.width, downscaleCanvas.height);
+  downscaleCtx.imageSmoothingEnabled = true;
   
   // Downscale the original canvas into a 28x28 pixel canvas
   downscaleCtx.drawImage(canvas, 0, 0, 28, 28);

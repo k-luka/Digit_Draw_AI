@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageFilter
 import io
 import base64  # Import for encoding the image to base64
 import base64
@@ -22,22 +22,32 @@ net = Network([784, 128, 64, 32, 10])
 net.weights = model_data['weights']
 net.biases = model_data['biases']
 
+from PIL import Image
+
 def center_image(image):
+    # Convert to binary for locating the digit area
     np_image = np.array(image)
     np_image = (np_image > 0).astype(np.uint8)
     coords = np.argwhere(np_image)
     if coords.size == 0:
-        return image
+        return Image.new('L', (28, 28))  # Return blank if no digit found
+    
+    # Crop to bounding box
     y0, x0 = coords.min(axis=0)
     y1, x1 = coords.max(axis=0) + 1
-    cropped = np_image[y0:y1, x0:x1]
-
+    cropped = image.crop((x0, y0, x1, y1))
+    
+    # Resize without smoothing for clarity
+    cropped = cropped.resize((20, 20))
+    
+    # Center within 28x28 canvas
     new_image = Image.new('L', (28, 28))
-    paste_x = (28 - cropped.shape[1]) // 2
-    paste_y = (28 - cropped.shape[0]) // 2
-    new_image.paste(Image.fromarray(cropped * 255), (paste_x, paste_y))
-
+    paste_x = (28 - 20) // 2
+    paste_y = (28 - 20) // 2
+    new_image.paste(cropped, (paste_x, paste_y))
+    
     return new_image
+
 
 def binarize_image(image):
     threshold = 128
@@ -54,16 +64,16 @@ def predict():
         image = Image.open(io.BytesIO(image_file)).convert('L')
         inverted_image = ImageOps.invert(image)
         centered_image = center_image(inverted_image)
-        binarized_image = binarize_image(centered_image)
+        # binarized_image = binarize_image(centered_image)
 
-        image_np = np.array(binarized_image).astype('float32') / 255.0
+        image_np = np.array(centered_image).astype('float32') / 255.0
         image_np = image_np.flatten().reshape(784, 1)
 
         output = net.feedforward(image_np)
         predicted_digit = np.argmax(output)
 
         buffered = io.BytesIO()
-        binarized_image.save(buffered, format="PNG")
+        centered_image.save(buffered, format="PNG")
         img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
 
         return jsonify({'digit': int(predicted_digit), 'processed_image': img_base64})
@@ -82,7 +92,7 @@ def submit_data():
         image = Image.open(io.BytesIO(image_file)).convert('L')
         inverted_image = ImageOps.invert(image)
         centered_image = center_image(inverted_image)
-        binarized_image = binarize_image(centered_image)
+        # binarized_image = binarize_image(centered_image)
 
         save_directory = 'data/newData'
         os.makedirs(save_directory, exist_ok=True)
@@ -91,7 +101,7 @@ def submit_data():
         filename = f'user_{timestamp}.png'
         filepath = os.path.join(save_directory, filename)
 
-        binarized_image.save(filepath)
+        centered_image.save(filepath)
 
         label_file = os.path.join(save_directory, 'labels.csv')
         with open(label_file, 'a') as f:

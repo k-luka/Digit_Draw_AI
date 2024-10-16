@@ -15,7 +15,7 @@ def preprocess_image(image_path):
     image = Image.open(image_path).convert('L')
     
     # Invert the image to match the inversion done during prediction
-    image = ImageOps.invert(image)
+    # image = ImageOps.invert(image)
     
     # Apply centering and scaling if not already applied
     image = center_image(image)

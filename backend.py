@@ -1,9 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 import numpy as np
-from PIL import Image, ImageOps, ImageFilter
+from PIL import Image, ImageOps
 import io
-import base64  # Import for encoding the image to base64
 import base64
 import pickle
 import os
@@ -21,8 +20,6 @@ with open('fine_tuned_model_weights.pkl', 'rb') as f:
 net = Network([784, 128, 64, 32, 10])
 net.weights = model_data['weights']
 net.biases = model_data['biases']
-
-from PIL import Image
 
 def center_image(image):
     # Convert to binary to find the bounding box
@@ -53,11 +50,6 @@ def center_image(image):
     
     return new_image
 
-
-def binarize_image(image):
-    threshold = 128
-    return image.point(lambda p: 255 if p > threshold else 0, 'L')
-
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -69,7 +61,6 @@ def predict():
         image = Image.open(io.BytesIO(image_file)).convert('L')
         inverted_image = ImageOps.invert(image)
         centered_image = center_image(inverted_image)
-        # binarized_image = binarize_image(centered_image)
 
         image_np = np.array(centered_image).astype('float32') / 255.0
         image_np = image_np.flatten().reshape(784, 1)
@@ -97,17 +88,19 @@ def submit_data():
         image = Image.open(io.BytesIO(image_file)).convert('L')
         inverted_image = ImageOps.invert(image)
         centered_image = center_image(inverted_image)
-        # binarized_image = binarize_image(centered_image)
 
-        save_directory = 'data/newData'
+        # Updated save directory to 'data/processedData'
+        save_directory = 'data/processedData'
         os.makedirs(save_directory, exist_ok=True)
 
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S%f')
         filename = f'user_{timestamp}.png'
         filepath = os.path.join(save_directory, filename)
 
+        # Save the processed image
         centered_image.save(filepath)
 
+        # Append the filename and label to the labels.csv file
         label_file = os.path.join(save_directory, 'labels.csv')
         with open(label_file, 'a') as f:
             f.write(f'{filename},{label}\n')

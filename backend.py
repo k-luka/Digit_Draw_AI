@@ -8,8 +8,8 @@ import pickle
 import os
 from datetime import datetime
 from network import Network
-import requests  # Added
-import base64    # Added
+import requests  
+import base64   
 
 app = Flask(__name__)
 CORS(app)
@@ -77,20 +77,26 @@ def upload_to_github(local_file_path, github_file_path, commit_message):
     }
 
     # Check if the file already exists to get its SHA
-    response = requests.get(github_api_url, headers=headers)
+    response = requests.get(github_api_url, headers=headers, params={'ref': 'data-upload'})
     if response.status_code == 200:
-        sha = response.json()['sha']
-    else:
+        sha = response.json().get('sha')
+        print(f'Existing file found. SHA: {sha}')
+    elif response.status_code == 404:
         sha = None
+        print('File does not exist. It will be created.')
+    else:
+        print(f'Failed to check file existence: {response.status_code}')
+        print('Response:', response.json())
+        raise Exception(f'Failed to check file existence for {github_file_path}.')
 
     data = {
         'message': commit_message,
         'content': content,
-        'branch': 'main'
+        'branch': 'data-upload'
     }
 
     if sha:
-        data['sha'] = sha  # Include SHA to update existing file
+        data['sha'] = sha
 
     # Make the request to create/update the file
     response = requests.put(github_api_url, headers=headers, json=data)
@@ -100,6 +106,7 @@ def upload_to_github(local_file_path, github_file_path, commit_message):
     else:
         print(f'Failed to upload {github_file_path}:', response.json())
         raise Exception(f'Failed to upload {github_file_path} to GitHub.')
+
 
 @app.route('/')
 def home():
@@ -154,8 +161,9 @@ def submit_data():
         # Append the filename and label to the labels.csv file
         label_file = os.path.join(save_directory, 'labels.csv')
         if not os.path.exists(label_file):
+            # Initialize labels.csv with headers
             with open(label_file, 'w') as f:
-                f.write('filename,label\n')  # Add header if file doesn't exist
+                f.write('filename,label\n')
         with open(label_file, 'a') as f:
             f.write(f'{filename},{label}\n')
 

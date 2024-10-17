@@ -15,7 +15,10 @@
   <meta name="msapplication-TileColor" content="#da532c">
   <meta name="theme-color" content="#ffffff">
 
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
   <style>
     body {
       margin: 0;
@@ -89,7 +92,7 @@
       background-color: #e53935;
     }
 
-    /* New Styles for Training Mode */
+    /* Styles for Training Mode */
 
     .label-container {
       margin: 20px;
@@ -278,7 +281,8 @@
   <!-- Processed Image Display -->
   <div>
     <h3>Processed Image:</h3>
-    <img id="processedImage" width="280" height="280" alt="Processed Digit Image"/>
+    <!-- Placeholder Black Square Image -->
+    <img id="processedImage" src="{{ url_for('static', filename='black_square.png') }}" width="280" height="280" alt="Processed Digit Image" style="image-rendering: pixelated; background-color: #000000;"/>
   </div>
   
   <!-- Training Mode Toggle -->

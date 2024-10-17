@@ -33,3 +33,4 @@ scipy==1.14.1
 six==1.16.0
 threadpoolctl==3.5.0
 Werkzeug==3.0.4
+requests

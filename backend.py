@@ -8,6 +8,8 @@ import pickle
 import os
 from datetime import datetime
 from network import Network
+import requests  # Added
+import base64    # Added
 
 app = Flask(__name__)
 CORS(app)
@@ -50,6 +52,55 @@ def center_image(image):
     
     return new_image
 
+def upload_to_github(local_file_path, github_file_path, commit_message):
+    """
+    Uploads a file to GitHub using the GitHub API.
+    """
+    # Get environment variables
+    github_token = os.environ.get('GITHUB_TOKEN')
+    github_repo = os.environ.get('GITHUB_REPO')
+    github_username = os.environ.get('GITHUB_USERNAME')
+
+    if not github_token or not github_repo or not github_username:
+        raise Exception('GitHub configuration is missing.')
+
+    # Read the file content and encode it in base64
+    with open(local_file_path, 'rb') as file:
+        content = base64.b64encode(file.read()).decode('utf-8')
+
+    # Prepare the API URL
+    github_api_url = f'https://api.github.com/repos/{github_repo}/contents/{github_file_path}'
+
+    headers = {
+        'Authorization': f'token {github_token}',
+        'Accept': 'application/vnd.github.v3+json'
+    }
+
+    # Check if the file already exists to get its SHA
+    response = requests.get(github_api_url, headers=headers)
+    if response.status_code == 200:
+        sha = response.json()['sha']
+    else:
+        sha = None
+
+    data = {
+        'message': commit_message,
+        'content': content,
+        'branch': 'main'
+    }
+
+    if sha:
+        data['sha'] = sha  # Include SHA to update existing file
+
+    # Make the request to create/update the file
+    response = requests.put(github_api_url, headers=headers, json=data)
+
+    if response.status_code in [200, 201]:
+        print(f'File {github_file_path} uploaded successfully.')
+    else:
+        print(f'Failed to upload {github_file_path}:', response.json())
+        raise Exception(f'Failed to upload {github_file_path} to GitHub.')
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -74,6 +125,7 @@ def predict():
 
         return jsonify({'digit': int(predicted_digit), 'processed_image': img_base64})
     except Exception as e:
+        print('Error:', e)
         return jsonify({'error': str(e)}), 500
 
 @app.route('/submit_data', methods=['POST'])
@@ -89,7 +141,7 @@ def submit_data():
         inverted_image = ImageOps.invert(image)
         centered_image = center_image(inverted_image)
 
-        # Updated save directory to 'data/processedData'
+        # Save the processed image locally
         save_directory = 'data/processedData'
         os.makedirs(save_directory, exist_ok=True)
 
@@ -97,16 +149,24 @@ def submit_data():
         filename = f'user_{timestamp}.png'
         filepath = os.path.join(save_directory, filename)
 
-        # Save the processed image
         centered_image.save(filepath)
 
         # Append the filename and label to the labels.csv file
         label_file = os.path.join(save_directory, 'labels.csv')
+        if not os.path.exists(label_file):
+            with open(label_file, 'w') as f:
+                f.write('filename,label\n')  # Add header if file doesn't exist
         with open(label_file, 'a') as f:
             f.write(f'{filename},{label}\n')
 
-        return jsonify({'status': 'success', 'message': 'Data saved successfully.'}), 200
+        # Upload the image and labels.csv to GitHub
+        upload_to_github(filepath, f'data/processedData/{filename}', f'Add {filename}')
+        upload_to_github(label_file, 'data/processedData/labels.csv', 'Update labels.csv')
+
+        return jsonify({'status': 'success', 'message': 'Data saved and uploaded successfully.'}), 200
+
     except Exception as e:
+        print('Error:', e)
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

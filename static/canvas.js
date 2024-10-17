@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
           } else {
             alert(`Predicted Digit: ${data.digit}`);
           }
-          // Display the processed image
+          // Update the processed image preview
           const processedImageElement = document.getElementById('processedImage');
           if (processedImageElement) {
             processedImageElement.src = `data:image/png;base64,${data.processed_image}`;

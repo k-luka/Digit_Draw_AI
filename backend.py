@@ -8,8 +8,8 @@ import pickle
 import os
 from datetime import datetime
 from network import Network
-import requests  # Added
-import base64    # Added
+import requests  
+import base64   
 
 app = Flask(__name__)
 CORS(app)
@@ -86,7 +86,7 @@ def upload_to_github(local_file_path, github_file_path, commit_message):
     data = {
         'message': commit_message,
         'content': content,
-        'branch': 'main'
+        'branch': 'data-upload'
     }
 
     if sha:

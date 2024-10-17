@@ -248,6 +248,7 @@
         text-decoration: underline;
         text-align: center;
         margin-top: 20px;
+        min-height: 35px; /* Added to reserve space */
       }
     }
 
@@ -258,7 +259,13 @@
         font-weight: bold;
         text-decoration: underline;
         text-align: center;
+        min-height: 30px; /* Added to reserve space */
       }
+    }
+
+    /* Added to ensure min-height is set even outside media queries */
+    #predictionResult {
+      min-height: 30px; /* Adjust as needed */
     }
   </style>
 </head>
@@ -276,7 +283,7 @@
   </div>
   
   <!-- Prediction Result -->
-  <div id="predictionResult" style="margin-top: 20px; font-size: 24px;"></div>
+  <div id="predictionResult" style="margin-top: 20px; font-size: 24px;">&nbsp;</div>
 
   <!-- Processed Image Display -->
   <div>
